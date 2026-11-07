@@ -17,7 +17,7 @@ Dans un pressing, les clients déposent des habits à toute heure. Sans système
 
 ▶️ **Démo (Short) :** [lien à ajouter]
 🎓 **Tutoriel complet :** [lien à ajouter]
-🌐 **Essayer en ligne :** [lien GitHub Pages à ajouter]
+🌐 **Essayer en ligne :** [https://dailybuilds-dev.github.io/pressing-gestion/]
 
 ### Fonctionnalités
 
@@ -103,7 +103,7 @@ In a dry-cleaning shop, customers drop off clothes all day long. Without a syste
 
 ▶️ **Demo (Short):** [link to add]
 🎓 **Full tutorial:** [link to add]
-🌐 **Try it online:** [GitHub Pages link to add]
+🌐 **Try it online:** [https://dailybuilds-dev.github.io/pressing-gestion/]
 
 ### Features
 
