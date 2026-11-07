@@ -99,7 +99,7 @@ Si cette app t'a été utile : ⭐ mets une étoile au dépôt, partage-le, ou o
 In a dry-cleaning shop, customers drop off clothes all day long. Without a system, orders end up in a notebook, garments get mixed up, and nobody knows who dropped off what or whether an order is ready. This app replaces the notebook with a simple tool that works on phones and computers.
 
 ### Preview
-![App screenshot](docs/screenshot.png)
+![App screenshot](screenshot.png)
 
 ▶️ **Demo (Short):** [link to add]
 🎓 **Full tutorial:** [link to add]
