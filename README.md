@@ -13,7 +13,7 @@
 Dans un pressing, les clients déposent des habits à toute heure. Sans système, on note sur un carnet, on mélange les vêtements, on ne sait plus qui a déposé quoi, ni si la commande est prête. Cette app remplace le carnet par un outil simple, utilisable sur téléphone comme sur ordinateur.
 
 ### Aperçu
-![Capture d'écran de l'app](docs/screenshot.png)
+![Capture d'écran de l'app](screenshot.png)
 
 ▶️ **Démo (Short) :** [lien à ajouter]
 🎓 **Tutoriel complet :** [lien à ajouter]
