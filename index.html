@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pressing – Gestion des commandes</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3f6;--surface:#fff;--ink:#12303f;--muted:#5d7684;--line:#d3dfe6;--accent:#0e7c86;--accent-ink:#fff;
+--s0:#8a6d1f;--s0b:#fbf0cf;--s1:#1f5fa8;--s1b:#dce9f8;--s2:#0e7a4f;--s2b:#d8f1e5;--s3:#5d7684;--s3b:#e4ebef;--danger:#b3261e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a21;--surface:#16262f;--ink:#e6f0f4;--muted:#8fa7b3;--line:#2a3f4b;--accent:#4fc3cc;--accent-ink:#06242a;
+--s0:#f0cf72;--s0b:#3a3016;--s1:#8dbcf2;--s1b:#1b3550;--s2:#7fd9ad;--s2b:#16382b;--s3:#9bb2be;--s3b:#22343e;--danger:#f2958f}}
+:root[data-theme="dark"]{--bg:#0e1a21;--surface:#16262f;--ink:#e6f0f4;--muted:#8fa7b3;--line:#2a3f4b;--accent:#4fc3cc;--accent-ink:#06242a;--s0:#f0cf72;--s0b:#3a3016;--s1:#8dbcf2;--s1b:#1b3550;--s2:#7fd9ad;--s2b:#16382b;--s3:#9bb2be;--s3b:#22343e;--danger:#f2958f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "DM Sans",system-ui,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+h1,h2,h3{font-family:"Bricolage Grotesque","DM Sans",sans-serif;margin:0}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+h1{font-size:1.5rem}
+nav{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:16px}
+nav button{flex:1;border:0;background:none;color:var(--muted);font:500 .82rem "DM Sans",sans-serif;padding:10px 2px;border-radius:9px;cursor:pointer}
+nav button[aria-selected=true]{background:var(--accent);color:var(--accent-ink)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.stat b{display:block;font:700 1.2rem "Bricolage Grotesque",sans-serif}
+.stat span{font-size:.78rem;color:var(--muted)}
+.row{display:flex;gap:8px;margin-bottom:12px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+label{display:block;font-size:.85rem;color:var(--muted);margin:0 0 4px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font:700 .95rem "DM Sans",sans-serif;padding:11px 16px;border-radius:10px;cursor:pointer}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{padding:7px 11px;font-size:.85rem}
+.ticket{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.ticket .top{display:flex;justify-content:space-between;gap:10px;padding:12px 14px}
+.ticket .num{font:700 1.05rem "Bricolage Grotesque",sans-serif}
+.ticket .meta{color:var(--muted);font-size:.88rem}
+.ticket .perf{border-top:2px dashed var(--line);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.items{font-size:.9rem;padding:0 14px 12px}
+.badge{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;height:fit-content}
+.st0{background:var(--s0b);color:var(--s0)}.st1{background:var(--s1b);color:var(--s1)}.st2{background:var(--s2b);color:var(--s2)}.st3{background:var(--s3b);color:var(--s3)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.line{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.line .nm{flex:1}.line .qty{width:92px;display:flex;align-items:center;gap:4px}
+.qty button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--ink);font-size:1.1rem;cursor:pointer}
+.qty span{min-width:20px;text-align:center}
+.total{display:flex;justify-content:space-between;font:700 1.15rem "Bricolage Grotesque",sans-serif;margin:12px 0}
+.empty{text-align:center;color:var(--muted);padding:28px 10px}
+.pay{color:var(--danger);font-weight:700}.paid{color:var(--s2);font-weight:700}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.flag{background:var(--s0b);color:var(--danger)}.flag2{background:var(--s1b);color:var(--s1)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.paper{background:#fff;color:#111;border-radius:10px;padding:18px;width:100%;max-width:340px;max-height:90vh;overflow:auto;font:14px/1.4 ui-monospace,Menlo,monospace}
+.paper h3{text-align:center;margin-bottom:6px;font-family:inherit}.paper hr{border:0;border-top:1px dashed #888;margin:8px 0}.paper .r{display:flex;justify-content:space-between;gap:8px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:140px;margin:10px 0 6px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:.72rem;color:var(--muted);gap:2px}
+.bar i{display:block;width:100%;background:var(--accent);border-radius:5px 5px 0 0;min-height:2px}
+.hidden{display:none}
+.stat b{word-break:break-word}
+@media print{body>*:not(#modal){display:none!important}#modal{position:static;background:none;padding:0}.noprint{display:none!important}.paper{max-width:none;max-height:none}}
+:root{--bg:#f1f6fb;--surface:#fff;--ink:#0b2540;--muted:#5b7088;--line:#e0e9f2;--accent:#0a7bd4;--accent2:#12bfae;--accent-ink:#fff;--sh:0 8px 24px -12px rgba(11,37,64,.28)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#071827;--surface:#0f2842;--ink:#e8f1fa;--muted:#8aa6c1;--line:#1d3b5a;--accent:#4cb8ff;--accent2:#3ee0cb;--accent-ink:#04202e;--sh:0 8px 24px -12px rgba(0,0,0,.6)}}
+body{background:var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:#0a5fb4;z-index:30}
+.wrap{padding:0 16px 120px}
+header{position:relative;overflow:hidden;margin:0 -16px 18px;padding:22px 18px 26px;border-radius:0 0 28px 28px;color:#fff;background:radial-gradient(circle at 88% 15%,rgba(255,255,255,.22) 0 46px,transparent 47px),radial-gradient(circle at 72% 105%,rgba(255,255,255,.14) 0 70px,transparent 71px),linear-gradient(135deg,#0a5fb4,#0fb5a6);box-shadow:var(--sh)}
+header h1{font-size:1.65rem;color:#fff}header h1::before{content:"🧺 "}
+header #sync{color:rgba(255,255,255,.85)!important;margin-top:2px}
+header .btn.ghost{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:25;max-width:760px;margin:0 auto;border:0;border-top:1px solid var(--line);border-radius:22px 22px 0 0;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 28px -12px rgba(11,37,64,.3);gap:4px}
+nav button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;padding:7px 2px;border-radius:14px}
+nav .ic{font-size:1.3rem;line-height:1}
+nav button[aria-selected=true]{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--accent-ink);box-shadow:0 6px 14px -6px var(--accent)}
+.card,.ticket,.stat{border:0;box-shadow:var(--sh);border-radius:18px}
+.card{padding:16px}
+.stat{padding:12px 4px 10px;border-bottom:3px solid var(--c,var(--accent))}
+.stat::before{display:block;font-size:1.3rem;margin-bottom:2px}
+#stats .stat:nth-child(1){--c:var(--s0)}#stats .stat:nth-child(2){--c:var(--s1)}#stats .stat:nth-child(3){--c:var(--s2)}#stats .stat:nth-child(4){--c:var(--accent2)}
+#stats .stat:nth-child(1)::before{content:"📥"}#stats .stat:nth-child(2)::before{content:"🧼"}#stats .stat:nth-child(3)::before{content:"✅"}#stats .stat:nth-child(4)::before{content:"💰"}
+#cstats .stat:nth-child(1)::before{content:"👥"}#cstats .stat:nth-child(2)::before{content:"💰"}#cstats .stat:nth-child(3)::before{content:"🧺"}
+.ticket{border-left:6px solid var(--line)}
+.ticket.t0{border-left-color:var(--s0)}.ticket.t1{border-left-color:var(--s1)}.ticket.t2{border-left-color:var(--s2)}.ticket.t3{border-left-color:var(--s3)}
+.ticket .num{font-size:1.1rem}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;box-shadow:0 6px 14px -8px var(--accent);transition:transform .12s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:none;box-shadow:none}
+#save{padding:15px;font-size:1.05rem;border-radius:16px}
+input,select{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+input:focus,select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.total{font-size:1.3rem;color:var(--accent)}
+.toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.modal{z-index:40}.paper{border-radius:18px}.badge{font-size:.75rem}
+details.card summary{cursor:pointer;font:700 1rem "Bricolage Grotesque",sans-serif}details.card p,details.card li{font-size:.92rem;color:var(--muted);margin:.4em 0}details.card ul,details.card ol{padding-left:20px;margin:6px 0 0}
+.lb{display:flex;gap:6px;align-items:center;border:1px dashed #999;padding:6px;font-size:11px;line-height:1.3}.lb .qr img{display:block}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header><div><h1 id="brand">Mon pressing</h1><div id="sync" style="font-size:.8rem;color:var(--muted)">Données enregistrées sur cet appareil</div></div><div style="display:flex;gap:6px;align-items:center"><select id="who" aria-label="Employé" style="width:auto;padding:6px 8px;font-size:.85rem;border-radius:10px"></select><button class="btn ghost sm" id="gbtn" aria-label="Guide d’utilisation">❓</button><button class="btn ghost sm" id="reset">Réinitialiser</button></div></header>
+<nav role="tablist">
+<button role="tab" data-tab="orders" aria-selected="true"><span class="ic">📋</span>Commandes</button>
+<button role="tab" data-tab="new" aria-selected="false"><span class="ic">➕</span>Nouvelle</button>
+<button role="tab" data-tab="clients" aria-selected="false"><span class="ic">👥</span>Clients</button>
+<button role="tab" data-tab="bilan" aria-selected="false"><span class="ic">📊</span>Bilan</button>
+<button role="tab" data-tab="prices" aria-selected="false"><span class="ic">⚙️</span>Réglages</button>
+</nav>
+
+<section id="orders">
+<div id="lowbox"></div>
+<div class="stats" id="stats"></div>
+<div class="row"><input id="q" type="search" placeholder="Rechercher un client, un numéro…" aria-label="Rechercher"><select id="f" style="max-width:150px" aria-label="Filtrer par statut"></select></div>
+<div id="list"></div>
+</section>
+
+<section id="new" class="hidden">
+<div class="card">
+<div class="row"><div style="flex:1"><label for="cn">Nom du client</label><input id="cn" list="clist" autocomplete="off"><datalist id="clist"></datalist></div></div>
+<div class="row"><div style="flex:1"><label for="cp">Téléphone</label><input id="cp" type="tel" autocomplete="off"></div><div style="flex:1"><label for="cd">Retrait prévu</label><input id="cd" type="date"></div></div>
+</div>
+<div class="card"><h3 style="margin-bottom:10px">Articles</h3><div id="lines"></div>
+<div class="total"><span>Total</span><span id="tot">0,00 €</span></div>
+<div class="row" style="margin-top:12px"><div style="flex:1"><label for="rem">Remise (%)</label><input id="rem" type="number" min="0" max="100" value="0"></div><div style="flex:2"><label for="note">Remarque (taches, boutons…)</label><input id="note" autocomplete="off"></div></div>
+<label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin-bottom:8px"><input id="ex" type="checkbox" style="width:auto"> Service express (+<span id="exl">30</span> %)</label>
+<div class="row" style="margin-top:12px"><div style="flex:1"><label for="adv">Acompte versé</label><input id="adv" type="number" min="0" value="0"></div><div style="flex:1"><label for="pm">Paiement</label><select id="pm"><option>Espèces</option><option>Mobile Money</option><option>Carte</option></select></div></div>
+<label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin-bottom:8px"><input id="liv" type="checkbox" style="width:auto"> 🚚 Livraison à domicile</label>
+<div id="livf" class="row hidden"><input id="adr" placeholder="Adresse de livraison"><input id="fee" type="number" min="0" placeholder="Frais" style="max-width:100px"></div>
+<label for="ph">Photos des articles (3 max)</label><input id="ph" type="file" accept="image/*" multiple style="margin-bottom:8px"><div id="phv" style="display:flex;gap:6px;margin-bottom:10px"></div>
+<label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input id="paidnow" type="checkbox" style="width:auto"> Payé à la dépose</label>
+</div>
+<button class="btn" id="save" style="width:100%">Enregistrer la commande</button>
+</section>
+
+<section id="guide" class="hidden">
+<div class="card"><h3>📖 Guide d’utilisation</h3><p style="margin:6px 0 0;color:var(--muted);font-size:.92rem">Touchez un titre pour ouvrir la rubrique.</p></div>
+<details class="card" open><summary>1. Premiers pas (à faire une fois)</summary><ol><li>Ouvrez <b>Réglages</b> et remplissez le nom, l’adresse et le téléphone du pressing : ils apparaissent sur les tickets.</li><li>Indiquez l’<b>indicatif pays</b> (ex. 221) pour que WhatsApp ouvre la bonne discussion.</li><li>Choisissez la <b>devise</b> puis « Adapter les tarifs », ou saisissez vos propres tarifs.</li><li>Réglez le <b>supplément express</b> (30 % par défaut) : chacun peut le modifier.</li><li>Ajoutez vos employés, le stock et, si vous voulez, un code de sécurité.</li></ol></details>
+<details class="card"><summary>2. Enregistrer une commande</summary><ol><li>Onglet <b>Nouvelle</b> : nom et téléphone du client (un client connu est reconnu automatiquement).</li><li>Touchez + pour chaque article. Le total se calcule seul.</li><li>Options : express, remise, acompte et moyen de paiement, livraison, photos, remarque.</li><li>Touchez <b>Enregistrer la commande</b>.</li></ol></details>
+<details class="card"><summary>3. Suivre et encaisser</summary><ul><li>Dans <b>Commandes</b>, le bouton principal fait avancer : Reçu → En cours → Prêt → Retiré.</li><li><b>Encaisser</b> règle le reste à payer.</li><li>Les filtres montrent les retards, les commandes à relancer et les livraisons.</li><li>Une commande prête depuis plus de 7 jours est signalée « À relancer ».</li></ul></details>
+<details class="card"><summary>4. Ticket, PDF et WhatsApp</summary><ul><li><b>Ticket</b> : affiche le reçu, l’imprime, l’enregistre en PDF ou crée des étiquettes QR par vêtement.</li><li><b>WhatsApp au client</b> : choisissez WhatsApp ou WhatsApp Business. Le message est déjà écrit, adressé au numéro du client.</li><li>Un lien WhatsApp ne peut pas joindre de fichier : enregistrez le PDF, puis joignez-le avec le trombone (Document).</li><li><b>Prévenir (WhatsApp)</b> envoie « votre commande est prête ».</li></ul></details>
+<details class="card"><summary>5. Clients et fidélité</summary><p>L’onglet <b>Clients</b> montre les commandes, le total dépensé et le reste dû. À partir du nombre de commandes défini dans Réglages, la remise fidélité s’applique automatiquement.</p></details>
+<details class="card"><summary>6. Stock, dépenses et bilan</summary><ul><li><b>Réglages</b> : le stock baisse tout seul à chaque commande selon la consommation par article, avec une alerte « Stock bas ».</li><li><b>Bilan</b> : chiffre d’affaires, articles les plus déposés, dépenses, bénéfice et journal des actions.</li><li><b>Export CSV</b> : toutes vos commandes dans un fichier Excel.</li></ul></details>
+<details class="card"><summary>7. Sécurité et sauvegarde</summary><ul><li>Les données sont enregistrées <b>sur cet appareil</b> uniquement. Effacer les données du navigateur les supprime.</li><li>Faites un <b>export CSV</b> régulièrement pour garder une copie.</li><li>Le code de sécurité protège la suppression des commandes et des dépenses, et la réinitialisation.</li></ul></details>
+</section>
+
+<section id="clients" class="hidden"><div class="stats" id="cstats" style="grid-template-columns:repeat(3,1fr)"></div><div id="cl"></div></section>
+
+<section id="bilan" class="hidden">
+<div class="row"><select id="per" aria-label="Période"><option value="d">7 derniers jours</option><option value="m">6 derniers mois</option></select><button class="btn ghost" id="csv" style="white-space:nowrap">Export CSV</button></div>
+<div class="card"><h3>Chiffre d’affaires</h3><div class="bars" id="bars"></div><div id="bsum" style="font-size:.85rem;color:var(--muted)"></div></div>
+<div class="card"><h3 style="margin-bottom:8px">Articles les plus déposés</h3><div id="top"></div></div>
+<div class="card"><h3 style="margin-bottom:8px">Dépenses et bénéfice</h3><div id="pf" style="margin-bottom:10px"></div><div class="row"><input id="el" placeholder="Dépense (ex. électricité)"><input id="ea" type="number" min="0" placeholder="Montant" style="max-width:110px"><button class="btn" id="eadd">Ajouter</button></div><div id="elist"></div></div>
+<div class="card"><h3 style="margin-bottom:8px">Journal d’activité</h3><div id="jr"></div></div>
+</section>
+
+<section id="prices" class="hidden">
+<div class="card"><h3 style="margin-bottom:10px">Tarifs par article</h3><div id="plist"></div>
+<div class="row" style="margin-top:12px"><input id="pn" placeholder="Nouvel article"><input id="pp" type="number" min="0" step="0.5" placeholder="Prix" style="max-width:100px"><button class="btn" id="padd">Ajouter</button></div></div>
+<div class="card"><h3 style="margin-bottom:10px">Stock de fournitures</h3><div id="slist"></div>
+<div class="row" style="margin-top:12px"><input id="sn" placeholder="Produit (ex. cintres)"><input id="sq" type="number" min="0" placeholder="Qté" style="max-width:80px"><input id="sa" type="number" min="0" placeholder="Alerte" style="max-width:80px"></div><div class="row"><input id="sc" type="number" min="0" step="0.5" placeholder="Conso. par article déposé (0 = aucune)"><button class="btn" id="sadd">Ajouter</button></div></div>
+<div class="card"><h3 style="margin-bottom:10px">Informations du pressing</h3>
+<label for="sh-n">Nom du pressing</label><input id="sh-n" autocomplete="off" style="margin-bottom:8px">
+<label for="sh-a">Adresse</label><input id="sh-a" autocomplete="off" style="margin-bottom:8px">
+<label for="sh-t">Téléphone</label><input id="sh-t" type="tel" autocomplete="off" style="margin-bottom:8px">
+<label for="sh-f">Message en bas du ticket</label><input id="sh-f" placeholder="Merci de votre confiance !" autocomplete="off" style="margin-bottom:8px">
+<label for="sh-c">Indicatif pays pour WhatsApp (ex. 221, 225, 212, 33)</label><input id="sh-c" inputmode="numeric" autocomplete="off" style="margin-bottom:8px">
+<label for="sh-l">Client fidèle : nombre de commandes</label><input id="sh-l" type="number" min="1" placeholder="5" style="margin-bottom:8px">
+<label for="sh-p">Remise fidélité (%)</label><input id="sh-p" type="number" min="0" max="100" placeholder="10" style="margin-bottom:8px">
+<label for="sh-x">Supplément du service express (%) — modifiable par tous</label><input id="sh-x" type="number" min="0" max="300" placeholder="30" style="margin-bottom:8px">
+<label for="sh-e">Employés (séparés par des virgules)</label><input id="sh-e" placeholder="Awa, Moussa" autocomplete="off" style="margin-bottom:10px">
+<button class="btn" id="shsave">Enregistrer</button></div>
+<div class="card"><h3 style="margin-bottom:6px">Devise</h3><select id="cur" aria-label="Devise"></select><div style="font-size:.85rem;color:var(--muted);margin-top:8px">Les tarifs d’exemple sont adaptés automatiquement tant que vous ne les avez pas modifiés. Les commandes déjà enregistrées gardent leurs montants.</div></div>
+<div class="card"><h3 style="margin-bottom:6px">Code de sécurité</h3><div id="pinst" style="font-size:.85rem;color:var(--muted);margin-bottom:10px"></div>
+<div class="row"><input id="pinnew" type="password" inputmode="numeric" placeholder="Nouveau code (4 chiffres ou plus)" autocomplete="off"><button class="btn" id="pinset">Enregistrer</button></div></div>
+</section>
+</div>
+<div class="modal hidden" id="modal"><div class="paper" id="paper"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const ST=["Reçu","En cours","Prêt","Retiré"];
+const DEF=[{n:"Chemise",p:3.5},{n:"Pantalon",p:6},{n:"Costume 2 pièces",p:16},{n:"Robe",p:10},{n:"Manteau",p:14},{n:"Veste",p:9},{n:"Couette",p:25},{n:"Rideaux (paire)",p:20}];
+let S={prices:DEF,orders:[],seq:1};
+try{const r=localStorage.getItem("pressing-v1");if(r)S=JSON.parse(r)}catch(e){}
+let fresh=!S.orders.length&&JSON.stringify(S.prices)===JSON.stringify(DEF)&&!S.cur;S.stock=S.stock||[];S.exp=S.exp||[];S.shop=S.shop||{};S.cur=S.cur||(fresh?"XOF":"EUR");
+const save=()=>{try{localStorage.setItem("pressing-v1",JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+const CURS={EUR:{n:"Euro",s:"€",d:2,r:1},XOF:{n:"Franc CFA",s:"FCFA",d:0,r:655},MAD:{n:"Dirham marocain",s:"MAD",d:2,r:11},DZD:{n:"Dinar algérien",s:"DA",d:2,r:145},TND:{n:"Dinar tunisien",s:"DT",d:2,r:3.3},USD:{n:"Dollar US",s:"$",d:2,r:1.1},CAD:{n:"Dollar canadien",s:"$ CA",d:2,r:1.5},GBP:{n:"Livre sterling",s:"£",d:2,r:.85},CHF:{n:"Franc suisse",s:"CHF",d:2,r:.95}};
+const cu=()=>CURS[S.cur]||CURS.EUR;
+const fm=(n,sm)=>{const c=cu(),v=n.toLocaleString("fr-FR",{minimumFractionDigits:c.d,maximumFractionDigits:c.d});return sm?v+'<small style="font-size:.55em"> '+c.s+'</small>':v+" "+c.s};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const toast=m=>{const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1800)};
+let qty={};
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x===b));
+ ["orders","new","clients","bilan","prices","guide"].forEach(t=>$(t).classList.toggle("hidden",t!==b.dataset.tab));
+ render();
+});
+
+function renderStats(){
+ const c=i=>S.orders.filter(o=>o.st===i).length;
+ const due=S.orders.reduce((a,o)=>a+rest(o),0);
+ $("stats").innerHTML=[[c(0),"Reçus"],[c(1),"En cours"],[c(2),"Prêts"],[fm(due,1),"À encaisser"]].map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+}
+function renderList(){
+ const q=$("q").value.toLowerCase(),f=$("f").value;
+ const l=S.orders.filter(o=>(f==="all"||(f==="late"?late(o):f==="stale"?stale(o):f==="liv"?o.liv&&o.st<3:o.st==+f))&&(`${o.name} ${o.phone} ${o.num}`.toLowerCase().includes(q))).sort((a,b)=>b.id-a.id);
+ if(!l.length){$("list").innerHTML=`<div class="empty">${S.orders.length?"Aucune commande ne correspond.":"Aucune commande pour l’instant. Ouvrez l’onglet Nouvelle pour enregistrer la première."}</div>`;return}
+ $("list").innerHTML=l.map(o=>`<div class="ticket t${o.st}"><div class="top"><div><div class="num">N° ${o.num} · ${esc(o.name)}</div><div class="meta">${esc(o.phone||"Pas de téléphone")} · retrait ${o.date?new Date(o.date).toLocaleDateString("fr-FR"):"non précisé"}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="badge st${o.st}">${ST[o.st]}</span>${late(o)?'<span class="badge flag">En retard</span>':''}${stale(o)?'<span class="badge flag">À relancer</span>':''}${o.ex?'<span class="badge flag2">Express</span>':''}</div></div>
+ <div class="items">${o.items.map(i=>`${i.q} × ${esc(i.n)}`).join(", ")}${o.rem?` · remise ${o.rem} %`:""}${o.note?`<div class="meta">Remarque : ${esc(o.note)}</div>`:""}${o.liv?`<div class="meta">🚚 ${esc(o.adr||"Livraison")}</div>`:""}${(o.ph||[]).length?`<div style="display:flex;gap:6px;margin-top:6px">${o.ph.map((p,i)=>`<img src="${p}" data-ph="${o.id}:${i}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;cursor:pointer" alt="Photo">`).join("")}</div>`:""}${o.log&&o.log.length?`<div class="meta" style="font-size:.78rem">${(l=>l.a+(l.w?" · "+esc(l.w):"")+" · "+new Date(l.t).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))(o.log[o.log.length-1])}</div>`:""}</div>
+ <div class="perf"><div><b>${fm(o.total)}</b> <span class="${o.paid?"paid":"pay"}">${o.paid?"Payé":"Reste "+fm(rest(o))}</span></div>
+ <div style="display:flex;gap:6px">${o.st==2&&o.phone?`<button class="btn ghost sm" data-wr="${o.id}">${stale(o)?"Relancer":"Prévenir"} (WhatsApp)</button>`:""}${o.paid?"":`<button class="btn ghost sm" data-pay="${o.id}">Encaisser</button>`}${o.st<3?`<button class="btn sm" data-next="${o.id}">${["Démarrer","Marquer prêt","Remettre au client"][o.st]}</button>`:""}<button class="btn ghost sm" data-tk="${o.id}">Ticket</button><button class="btn ghost sm" data-del="${o.id}" aria-label="Supprimer">✕</button></div></div></div>`).join("");
+}
+const calc=()=>{let s=S.prices.reduce((a,p,i)=>a+p.p*(qty[i]||0),0);if($("ex").checked)s*=1+exr()/100;const f=10**cu().d;return Math.round((s*(1-Math.min(100,Math.max(0,+$("rem").value||0))/100)+($("liv").checked?+$("fee").value||0:0))*f)/f};
+const late=o=>o.date&&o.st<3&&o.date<new Date().toISOString().slice(0,10);
+const clients=()=>{const m={};S.orders.forEach(o=>{const k=o.name.toLowerCase(),c=m[k]||(m[k]={name:o.name,phone:"",n:0,sum:0,due:0});c.n++;c.sum+=o.total;c.due+=rest(o);if(o.phone)c.phone=o.phone});return Object.values(m).sort((a,b)=>b.sum-a.sum)};
+function renderClients(){
+ const cl=clients(),all=S.orders.reduce((a,o)=>a+o.total,0),cash=S.orders.filter(o=>o.paid).reduce((a,o)=>a+o.total,0);
+ $("cstats").innerHTML=[[cl.length,"Clients"],[fm(cash,1),"Encaissé"],[fm(S.orders.length?all/S.orders.length:0,1),"Panier moyen"]].map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+ $("clist").innerHTML=cl.map(c=>`<option value="${esc(c.name)}">`).join("");
+ $("cl").innerHTML=cl.length?cl.map(c=>`<div class="ticket"><div class="top"><div><div class="num">${esc(c.name)}</div><div class="meta">${esc(c.phone||"Pas de téléphone")} · ${c.n} commande${c.n>1?"s":""} · ${fm(c.sum)}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">${c.n>=5?'<span class="badge st2">Fidèle</span>':''}${c.due?`<span class="badge flag">Reste ${fm(c.due)}</span>`:''}</div></div></div>`).join(""):'<div class="empty">Les clients apparaissent ici dès la première commande.</div>';
+}
+function renderLines(){
+ $("lines").innerHTML=S.prices.map((p,i)=>`<div class="line"><div class="nm">${esc(p.n)}<div class="meta" style="color:var(--muted);font-size:.8rem">${fm(p.p)}</div></div><div class="qty"><button data-m="${i}" aria-label="Retirer">−</button><span>${qty[i]||0}</span><button data-p="${i}" aria-label="Ajouter">+</button></div></div>`).join("");
+ $("tot").textContent=fm(calc());
+}
+function renderPrices(){
+ $("plist").innerHTML=S.prices.map((p,i)=>`<div class="line"><div class="nm">${esc(p.n)}</div><input type="number" min="0" step="0.5" value="${p.p}" data-pe="${i}" style="width:90px" aria-label="Prix ${esc(p.n)}"><button class="btn ghost sm" data-pd="${i}" aria-label="Supprimer">✕</button></div>`).join("");
+}
+function render(){$("brand").textContent=S.shop.n||"Mon pressing";renderWho();$("exl").textContent=exr();renderExp();renderJournal();renderStats();renderList();renderClients();renderBilan();renderStock();renderCur();renderAlerts();renderLines();renderPrices()}
+
+$("f").innerHTML='<option value="all">Tous</option><option value="late">En retard</option><option value="stale">À relancer</option><option value="liv">Livraisons</option>'+ST.map((s,i)=>`<option value="${i}">${s}</option>`).join("");
+$("q").oninput=renderList;$("f").onchange=renderList;$("ex").onchange=renderLines;$("rem").oninput=renderLines;
+$("cn").onchange=()=>{const c=clients().find(x=>x.name.toLowerCase()===$("cn").value.trim().toLowerCase());if(c&&!$("cp").value)$("cp").value=c.phone;const lt=+S.shop.lt||5,lp=+S.shop.lp||10;if(c&&c.n>=lt&&!+$("rem").value){$("rem").value=lp;renderLines();toast("Client fidèle : remise de "+lp+" %")}};
+$("list").onclick=e=>{const t=e.target.closest("button");if(!t)return;
+ if(t.dataset.wr){const o=S.orders.find(x=>x.id==t.dataset.wr);if(o){$("modal").dataset.id=o.id;waPanel(o,"ready");$("modal").classList.remove("hidden")}return}
+ const g=k=>S.orders.find(o=>o.id==t.dataset[k]);
+ if(t.dataset.next){const o=g("next");o.st++;if(o.st===2)o.rt=Date.now();logA(o,ST[o.st]);persist(o);toast("Statut mis à jour")}
+ else if(t.dataset.pay){const o=g("pay");o.paid=true;o.adv=o.total;logA(o,"Encaissé");persist(o);toast("Paiement enregistré")}
+ else if(t.dataset.tk){ticket(g("tk"));return}
+ else if(t.dataset.del){if(t.dataset.arm!=="1"){t.dataset.arm="1";t.textContent="Confirmer ?";setTimeout(()=>{t.dataset.arm="";t.textContent="✕"},3000);return}const id=t.dataset.del;askPin().then(ok=>{if(!ok)return;unpersist(id);S.orders=S.orders.filter(o=>o.id!=id);render()});return}
+ else return;save();render()};
+$("lines").onclick=e=>{const t=e.target.closest("button");if(!t)return;
+ if(t.dataset.p!==undefined)qty[t.dataset.p]=(qty[t.dataset.p]||0)+1;
+ if(t.dataset.m!==undefined)qty[t.dataset.m]=Math.max(0,(qty[t.dataset.m]||0)-1);
+ renderLines()};
+$("save").onclick=()=>{
+ const name=$("cn").value.trim(),items=S.prices.map((p,i)=>({n:p.n,q:qty[i]||0,p:p.p})).filter(i=>i.q);
+ if(!name)return toast("Indiquez le nom du client");
+ if(!items.length)return toast("Ajoutez au moins un article");
+ const total=calc();
+ const no={id:Date.now(),num:String(Math.max(1,...S.orders.map(o=>(+o.num||0)+1))).padStart(4,"0"),name,phone:$("cp").value.trim(),date:$("cd").value,items,total,st:0,paid:$("paidnow").checked,adv:$("paidnow").checked?total:Math.min(total,+$("adv").value||0),pm:$("pm").value,liv:$("liv").checked,adr:$("adr").value.trim(),fee:$("liv").checked?+$("fee").value||0:0,ph:PH.slice(),by:S.who||"",log:[{w:S.who||"",a:"Création",t:Date.now()}],ex:$("ex").checked,exr:exr(),rem:+$("rem").value||0,note:$("note").value.trim()};S.orders.push(no);persist(no);
+ const nb=items.reduce((a,i)=>a+i.q,0);let used=false;S.stock.forEach(s=>{if(s.c>0){s.q=Math.max(0,Math.round((s.q-s.c*nb)*10)/10);used=true}});if(used)persistStock();
+ save();qty={};["cn","cp","cd","note"].forEach(i=>$(i).value="");$("rem").value=0;$("adv").value=0;$("adr").value=$("fee").value="";$("liv").checked=false;$("livf").classList.add("hidden");PH=[];showPh();$("ex").checked=false;$("paidnow").checked=false;
+ document.querySelector('[data-tab="orders"]').click();toast("Commande enregistrée");
+};
+$("plist").onchange=e=>{const i=e.target.dataset.pe;if(i!==undefined){S.prices[i].p=Math.max(0,+e.target.value||0);persistPrices();toast("Tarif modifié")}};
+$("plist").onclick=e=>{const t=e.target.closest("button");if(t&&t.dataset.pd!==undefined){S.prices.splice(+t.dataset.pd,1);qty={};persistPrices();render()}};
+$("padd").onclick=()=>{const n=$("pn").value.trim(),p=+$("pp").value;if(!n||!(p>=0)||$("pp").value==="")return toast("Renseignez l’article et son prix");
+ S.prices.push({n,p});$("pn").value=$("pp").value="";persistPrices();render()};
+$("reset").onclick=e=>{const t=e.currentTarget;if(t.dataset.arm!=="1"){t.dataset.arm="1";t.textContent="Confirmer ?";setTimeout(()=>{t.dataset.arm="";t.textContent="Réinitialiser"},3000);return}
+ t.dataset.arm="";t.textContent="Réinitialiser";askPin().then(ok=>{if(!ok)return;const ids=S.orders.map(o=>o.id);S.orders=[];S.prices=defsFor(S.cur);qty={};ids.forEach(unpersist);persistPrices();render()})};
+
+const dl=async()=>{try{if(typeof claude!=="undefined")return await claude.use("downloads")}catch(e){return null}return{save:async({filename,data})=>{const b=data instanceof Blob?data:new Blob([data]),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}}};
+const fd=d=>new Date(d).toLocaleDateString("fr-FR");
+const txt=o=>[S.shop.n||"PRESSING",...(S.shop.a?[S.shop.a]:[]),...(S.shop.t?["Tel : "+S.shop.t]:[]),"Ticket n° "+o.num,fd(o.id),"","Client : "+o.name+(o.phone?" ("+o.phone+")":""),"",...o.items.map(i=>i.q+" x "+i.n+" : "+fm(i.q*i.p)),"",...(o.ex?["Express +"+(o.exr??30)+" %"]:[]),...(o.rem?["Remise "+o.rem+" %"]:[]),"Total : "+fm(o.total),o.paid?"Payé":"À payer au retrait",...(o.date?["Retrait prévu : "+fd(o.date)]:[]),...(o.note?["Remarque : "+o.note]:[])].join("\n");
+function ticket(o){
+ $("paper").innerHTML=`<h3>${esc(S.shop.n||"Pressing")}</h3>${S.shop.a||S.shop.t?`<div style="text-align:center;font-size:12px">${esc(S.shop.a||"")}${S.shop.a&&S.shop.t?"<br>":""}${esc(S.shop.t||"")}</div>`:""}<div style="text-align:center">Ticket n° ${o.num}<br>${fd(o.id)}</div><hr><div>${esc(o.name)}${o.phone?"<br>"+esc(o.phone):""}</div><hr>${o.items.map(i=>`<div class="r"><span>${i.q} × ${esc(i.n)}</span><span>${fm(i.q*i.p)}</span></div>`).join("")}${o.ex?'<div class="r"><span>Express</span><span>+${o.exr??30} %</span></div>':""}${o.rem?`<div class="r"><span>Remise</span><span>−${o.rem} %</span></div>`:""}${o.fee?`<div class="r"><span>Livraison</span><span>${fm(o.fee)}</span></div>`:""}<hr><div class="r"><b>Total</b><b>${fm(o.total)}</b></div>${!o.paid&&o.adv?`<div class="r"><span>Acompte (${esc(o.pm||"")})</span><span>${fm(o.adv)}</span></div><div class="r"><b>Reste</b><b>${fm(rest(o))}</b></div>`:""}<div style="text-align:center">${o.paid?"Payé":"À payer au retrait"}</div>${o.date?`<div style="text-align:center">Retrait prévu : ${fd(o.date)}</div>`:""}${o.note?`<hr><div>Remarque : ${esc(o.note)}</div>`:""}${S.shop.f?`<hr><div style="text-align:center">${esc(S.shop.f)}</div>`:""}<div class="noprint" style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-a="wa" style="background:#1fa855;color:#fff">WhatsApp au client</button><button class="btn sm" data-a="share" style="background:#1fa855;color:#fff">WhatsApp + PDF</button><button class="btn ghost sm" data-a="print" style="color:#111;border-color:#bbb">Imprimer</button><button class="btn ghost sm" data-a="save" style="color:#111;border-color:#bbb">PDF</button><button class="btn ghost sm" data-a="labels" style="color:#111;border-color:#bbb">Étiquettes QR</button><button class="btn ghost sm" data-a="close" style="color:#111;border-color:#bbb">Fermer</button></div>`;
+ $("modal").dataset.id=o.id;$("modal").classList.remove("hidden");
+}
+$("modal").onclick=async e=>{const a=e.target.dataset.a;if(e.target===$("modal")||a==="close"){if(PINRES){PINRES(false);PINRES=null}return $("modal").classList.add("hidden")}
+ if(a==="pinok"){if(h($("pinin").value)!==S.pin){toast("Code incorrect");return}$("modal").classList.add("hidden");const r=PINRES;PINRES=null;r&&r(true);return}
+ const o=S.orders.find(x=>x.id==$("modal").dataset.id);
+ if(a==="wa"&&o){waPanel(o);return}
+ if(a==="back"&&o){ticket(o);return}
+ if(a==="wcc"&&o){const v=$("wcc").value.replace(/\D/g,"");if(v){S.shop.cc=v;persistSettings();fillShop();waPanel(o)}return}
+ if(a==="labels"&&o){labels(o);return}
+ if(a==="share"&&o){const b=makePdf(o);if(!b)return toast("Création du PDF indisponible");const f=new File([b],"ticket-"+o.num+".pdf",{type:"application/pdf"});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:waMsg(o)});return}}catch(x){if(x&&x.name==="AbortError")return}
+  try{const d=await dl();if(!d)throw 0;await d.save({filename:"ticket-"+o.num+".pdf",data:b});toast("PDF enregistré : joignez-le dans WhatsApp avec le trombone")}catch(x){toast("Partage de fichier indisponible ici")}}
+ if(a==="print"){try{window.print()}catch(x){toast("Impression indisponible ici : utilisez Enregistrer")}}
+ if(a==="save"&&o){try{const d=await dl();if(!d)throw 0;const b=makePdf(o);await d.save(b?{filename:"ticket-"+o.num+".pdf",data:b}:{filename:"ticket-"+o.num+".txt",data:txt(o)})}catch(x){toast("Enregistrement indisponible ici")}}};
+
+function renderBilan(){
+ const m=$("per").value==="m",N=m?6:7,now=new Date(),B=[];
+ const key=d=>m?d.getFullYear()*12+d.getMonth():d.toDateString();
+ for(let k=N-1;k>=0;k--){const d=m?new Date(now.getFullYear(),now.getMonth()-k,1):new Date(now.getFullYear(),now.getMonth(),now.getDate()-k);B.push({d,k:key(d),v:0})}
+ S.orders.forEach(o=>{const b=B.find(x=>x.k===key(new Date(o.id)));if(b)b.v+=o.total});
+ const mx=Math.max(1,...B.map(b=>b.v));
+ $("bars").innerHTML=B.map(b=>`<div class="bar"><span>${b.v>=1000?Math.round(b.v/100)/10+"k":Math.round(b.v)}</span><i style="height:${Math.round(b.v/mx*70)}%"></i><span>${b.d.toLocaleDateString("fr-FR",m?{month:"short"}:{weekday:"short"})}</span></div>`).join("");
+ const tot=B.reduce((a,b)=>a+b.v,0);
+ $("bsum").textContent=`Total sur la période : ${fm(tot)} · ${S.orders.length} commande${S.orders.length>1?"s":""} enregistrée${S.orders.length>1?"s":""}`;
+ const c={};S.orders.forEach(o=>o.items.forEach(i=>c[i.n]=(c[i.n]||0)+i.q));
+ const tp=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,5);
+ $("top").innerHTML=tp.length?tp.map(([n,q])=>`<div class="line"><div class="nm">${esc(n)}</div><b>${q}</b></div>`).join(""):'<div class="empty">Pas encore de données.</div>';
+}
+$("per").onchange=renderBilan;
+$("csv").onclick=async()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+ const rows=[["Numéro","Date","Client","Téléphone","Articles","Total","Statut","Payé"],...S.orders.map(o=>[o.num,fd(o.id),o.name,o.phone,o.items.map(i=>i.q+" x "+i.n).join(" + "),o.total.toFixed(2),ST[o.st],o.paid?"oui":"non"])];
+ try{const d=await dl();if(!d)throw 0;await d.save({filename:"commandes-pressing.csv",data:"\ufeff"+rows.map(r=>r.map(q).join(";")).join("\n")})}catch(x){toast("Export indisponible ici")}};
+
+let PINRES=null;const h=s=>{let x=5381;for(const c of s)x=((x*33)^c.charCodeAt(0))>>>0;return x};
+function askPin(){if(!S.pin)return Promise.resolve(true);return new Promise(r=>{PINRES=r;$("paper").innerHTML=`<h3>Code requis</h3><input id="pinin" type="password" inputmode="numeric" autocomplete="off" style="background:#fff;color:#111;border-color:#bbb"><div class="noprint" style="display:flex;gap:8px;margin-top:12px"><button class="btn sm" data-a="pinok">Valider</button><button class="btn ghost sm" data-a="close" style="color:#111;border-color:#bbb">Annuler</button></div>`;$("modal").classList.remove("hidden");$("pinin").focus()})}
+function renderStock(){
+ const low=S.stock.filter(s=>s.q<=s.a);
+ $("slist").innerHTML=S.stock.length?S.stock.map((s,i)=>`<div class="line"><div class="nm">${esc(s.n)}${s.q<=s.a?' <span class="badge flag">Stock bas</span>':''}<div style="font-size:.8rem;color:var(--muted)">Alerte à ${s.a}${s.c?` · −${s.c} par article`:""}</div></div><div class="qty" style="width:auto"><button data-sm="${i}" aria-label="Retirer">−</button><span style="min-width:32px">${s.q}</span><button data-sp="${i}" aria-label="Ajouter">+</button></div><button class="btn ghost sm" data-sd="${i}" aria-label="Supprimer">✕</button></div>`).join(""):'<div class="empty">Ajoutez vos fournitures (cintres, housses, détachant…) pour être alerté avant la rupture.</div>';
+ $("lowbox").innerHTML=low.length?`<div class="card" style="border-color:var(--danger)"><b>Stock bas :</b> ${low.map(s=>esc(s.n)+" ("+s.q+")").join(", ")}</div>`:"";
+ $("pinst").textContent=S.pin?"Un code est demandé pour supprimer une commande, tout réinitialiser ou changer ce code.":"Aucun code défini. Définissez-en un pour protéger les suppressions et la réinitialisation.";
+}
+$("slist").onclick=e=>{const t=e.target.closest("button");if(!t)return;const d=t.dataset;
+ if(d.sp!==undefined)S.stock[d.sp].q++;
+ else if(d.sm!==undefined)S.stock[d.sm].q=Math.max(0,S.stock[d.sm].q-1);
+ else if(d.sd!==undefined){if(d.arm!=="1"){t.dataset.arm="1";t.textContent="Confirmer ?";setTimeout(()=>{t.dataset.arm="";t.textContent="✕"},3000);return}S.stock.splice(+d.sd,1)}
+ else return;persistStock();render()};
+$("sadd").onclick=()=>{const n=$("sn").value.trim();if(!n||$("sq").value==="")return toast("Renseignez le produit et la quantité");
+ S.stock.push({n,q:Math.max(0,+$("sq").value),a:Math.max(0,+$("sa").value||0),c:Math.max(0,+$("sc").value||0)});$("sn").value=$("sq").value=$("sa").value=$("sc").value="";persistStock();render()};
+$("pinset").onclick=()=>{const v=$("pinnew").value.trim();if(v&&!/^\d{4,}$/.test(v))return toast("Le code doit contenir au moins 4 chiffres");
+ askPin().then(ok=>{if(!ok)return;S.pin=v?h(v):0;$("pinnew").value="";persistSettings();render();toast(v?"Code enregistré":"Code supprimé")})};
+
+const defsFor=c=>DEF.map(x=>{const v=x.p*CURS[c].r;return{n:x.n,p:CURS[c].d===0?Math.round(v/50)*50:Math.round(v*2)/2}});
+if(fresh&&S.cur==="XOF"){S.prices=defsFor("XOF");save()}
+const stale=o=>o.st===2&&Date.now()-(o.rt||o.id)>6048e5;
+function renderCur(){$("cur").innerHTML=Object.entries(CURS).map(([k,c])=>`<option value="${k}"${k===S.cur?" selected":""}>${c.n} (${c.s})</option>`).join("")}
+function renderAlerts(){const n=S.orders.filter(stale).length;if(n)$("lowbox").innerHTML+=`<div class="card" style="border-color:var(--danger)"><b>${n} commande${n>1?"s":""} à relancer</b> : prête${n>1?"s":""} depuis plus de 7 jours.</div>`}
+$("cur").onchange=()=>{const o=S.cur,n=$("cur").value;const untouched=JSON.stringify(S.prices)===JSON.stringify(defsFor(o));S.cur=n;if(untouched){S.prices=defsFor(n);persistPrices()}qty={};persistSettings();render();toast("Devise : "+CURS[n].n)};
+
+const fd0=0;
+const waMsg=o=>"Bonjour "+o.name+", voici votre ticket pour votre commande n° "+o.num+" chez "+(S.shop.n||"notre pressing")+". Montant : "+fm(o.total)+(o.paid?" (payé)":"")+". Nous vous préviendrons dès qu’elle sera prête."+(o.date?" Retrait prévu le "+fd(o.date)+".":"")+(S.shop.t?"\nContact : "+S.shop.t:"");
+function waNum(p){p=(p||"").trim();if(!p)return"";let d=p.replace(/\D/g,"");if(/^(\+|00)/.test(p))return d.replace(/^00/,"");const cc=(S.shop.cc||"").replace(/\D/g,"");if(!cc)return"";d=d.replace(/^0+/,"");return d.startsWith(cc)&&d.length>cc.length+6?d:cc+d}
+function makePdf(o){
+ const J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
+ const sh=S.shop||{},cl=s=>String(s).replace(/[\u202f\u00a0]/g," ").replace(/€/g,"EUR").replace(/’/g,"'").replace(/[−–]/g,"-");
+ const R=[],m=new J({unit:"mm",format:[80,200]});m.setFontSize(9);
+ const add=(t,r,k)=>{t=cl(t);r=r?cl(r):"";if(r)R.push({t,r,k});else m.splitTextToSize(t,70).forEach(x=>R.push({t:x,r:"",k}))};
+ add(sh.n||"Pressing","","h");if(sh.a)add(sh.a,"","c");if(sh.t)add("Tel : "+sh.t,"","c");
+ R.push({k:"s"});add("Ticket n° "+o.num+" - "+fd(o.id),"","c");R.push({k:"s"});
+ add("Client : "+o.name,"");if(o.phone)add("Tel : "+o.phone,"");R.push({k:"s"});
+ o.items.forEach(i=>add(i.q+" x "+i.n,fm(i.q*i.p)));
+ if(o.ex)add("Express","+"+(o.exr??30)+" %");if(o.rem)add("Remise","-"+o.rem+" %");
+ R.push({k:"s"});add("TOTAL",fm(o.total),"b");if(o.fee)add("dont livraison",fm(o.fee));if(!o.paid&&o.adv){add("Acompte",fm(o.adv));add("Reste",fm(rest(o)),"b")}add(o.paid?"Payé":"À payer au retrait","","c");
+ if(o.date)add("Retrait prévu : "+fd(o.date),"","c");if(o.note)add("Remarque : "+o.note,"");
+ if(sh.f){R.push({k:"s"});add(sh.f,"","c")}
+ const d=new J({unit:"mm",format:[80,Math.max(60,18+R.length*5.5)]});
+ let y=10;
+ R.forEach(x=>{
+  if(x.k==="s"){d.setDrawColor(150);d.setLineDashPattern([1,1],0);d.line(5,y-2,75,y-2);y+=2;return}
+  d.setFontSize(x.k==="h"?13:9);d.setFont("helvetica",x.k==="h"||x.k==="b"?"bold":"normal");
+  if(x.k==="h"||x.k==="c")d.text(x.t,40,y,{align:"center"});else{d.text(x.t,5,y);if(x.r)d.text(x.r,75,y,{align:"right"})}
+  y+=x.k==="h"?6:5;
+ });
+ return d.output("blob");
+}
+const waReady=o=>(stale(o)?"Rappel : ":"")+"Bonjour "+o.name+", votre commande n° "+o.num+" chez "+(S.shop.n||"notre pressing")+" est prête. "+(o.paid?"Elle est déjà réglée.":"Montant à régler : "+fm(o.total)+".")+" Vous pouvez venir la récupérer"+(S.shop.a?" à "+S.shop.a:"")+". Merci de votre confiance !"+(S.shop.t?"\nContact : "+S.shop.t:"");
+const fillShop=()=>[["n","sh-n"],["a","sh-a"],["t","sh-t"],["f","sh-f"],["cc","sh-c"],["lt","sh-l"],["lp","sh-p"],["team","sh-e"],["ex","sh-x"]].forEach(([k,id])=>$(id).value=S.shop[k]||"");
+$("shsave").onclick=()=>{S.shop={n:$("sh-n").value.trim(),a:$("sh-a").value.trim(),t:$("sh-t").value.trim(),f:$("sh-f").value.trim(),cc:$("sh-c").value.replace(/\D/g,""),lt:$("sh-l").value.trim(),lp:$("sh-p").value.trim(),team:$("sh-e").value.trim(),ex:$("sh-x").value.trim()};persistSettings();render();toast("Informations enregistrées")};
+fillShop();
+
+const exr=()=>{const v=parseFloat(S.shop.ex);return isNaN(v)?30:Math.max(0,v)};
+$("gbtn").onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected","false"));["orders","new","clients","bilan","prices","guide"].forEach(t=>$(t).classList.toggle("hidden",t!=="guide"));scrollTo(0,0)};
+const rest=o=>o.paid?0:Math.max(0,o.total-(o.adv||0));
+const cashIn=o=>o.paid?o.total:(o.adv||0);
+const logA=(o,a)=>{(o.log=o.log||[]).push({w:S.who||"",a,t:Date.now()})};
+const tf=t=>new Date(t).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+function renderWho(){const T=(S.shop.team||"").split(",").map(x=>x.trim()).filter(Boolean),w=$("who");w.classList.toggle("hidden",!T.length);if(!T.includes(S.who))S.who=T[0]||"";w.innerHTML=T.map(x=>`<option${x===S.who?" selected":""}>${esc(x)}</option>`).join("")}
+$("who").onchange=e=>{S.who=e.target.value;save()};
+function renderJournal(){const L=[];S.orders.forEach(o=>(o.log||[]).forEach(l=>L.push({...l,n:o.num})));L.sort((a,b)=>b.t-a.t);
+ $("jr").innerHTML=L.slice(0,12).map(l=>`<div class="line"><div class="nm">N° ${l.n} · ${esc(l.a)}<div style="font-size:.78rem;color:var(--muted)">${esc(l.w||"—")} · ${tf(l.t)}</div></div></div>`).join("")||'<div class="empty">Aucune action pour l’instant.</div>'}
+function renderExp(){const inc=S.orders.reduce((a,o)=>a+cashIn(o),0),out=S.exp.reduce((a,e)=>a+e.a,0);
+ $("pf").innerHTML=`Encaissé <b>${fm(inc)}</b> − dépenses <b>${fm(out)}</b> = <b style="color:${inc-out>=0?"var(--s2)":"var(--danger)"}">${fm(inc-out)}</b>`;
+ $("elist").innerHTML=S.exp.slice(-8).reverse().map(e=>`<div class="line"><div class="nm">${esc(e.l)}<div style="font-size:.78rem;color:var(--muted)">${fd(e.id)}</div></div><b>${fm(e.a)}</b><button class="btn ghost sm" data-ed="${e.id}" aria-label="Supprimer">✕</button></div>`).join("")}
+$("eadd").onclick=()=>{const l=$("el").value.trim(),a=+$("ea").value;if(!l||!(a>0))return toast("Renseignez la dépense et le montant");S.exp.push({id:Date.now(),l,a});$("el").value=$("ea").value="";persistExp();render()};
+$("elist").onclick=e=>{const t=e.target.closest("button");if(!t)return;askPin().then(ok=>{if(!ok)return;S.exp=S.exp.filter(x=>x.id!=t.dataset.ed);persistExp();render()})};
+$("liv").onchange=()=>{$("livf").classList.toggle("hidden",!$("liv").checked);renderLines()};$("fee").oninput=renderLines;
+let PH=[];
+const shrink=f=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>{const r=Math.min(1,480/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*r;c.height=i.height*r;c.getContext("2d").drawImage(i,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.6))};i.onerror=rej;i.src=URL.createObjectURL(f)});
+function showPh(){$("phv").innerHTML=PH.map(p=>`<img src="${p}" style="width:56px;height:56px;object-fit:cover;border-radius:8px" alt="">`).join("")}
+$("ph").onchange=async e=>{for(const f of [...e.target.files].slice(0,3-PH.length)){try{PH.push(await shrink(f))}catch(x){}}e.target.value="";showPh()};
+$("list").addEventListener("click",e=>{const v=e.target.dataset&&e.target.dataset.ph;if(!v)return;const[id,k]=v.split(":"),o=S.orders.find(x=>x.id==id);if(!o)return;$("paper").innerHTML=`<img src="${o.ph[k]}" style="width:100%;border-radius:8px" alt="Photo"><div class="noprint" style="margin-top:10px"><button class="btn ghost sm" data-a="close" style="color:#111;border-color:#bbb">Fermer</button></div>`;$("modal").classList.remove("hidden")});
+function waPanel(o,k){
+ const msg=encodeURIComponent(k==="ready"?waReady(o):waMsg(o)),n=waNum(o.phone),ua=navigator.userAgent,and=/Android/i.test(ua),ios=/iPhone|iPad|iPod/i.test(ua);
+ const web="https://wa.me/"+n+"?text="+msg,ph=n?"phone="+n+"&":"";
+ const lk=b=>and?`intent://send?${ph}text=${msg}#Intent;scheme=whatsapp;package=${b?"com.whatsapp.w4b":"com.whatsapp"};S.browser_fallback_url=${encodeURIComponent(web)};end`:ios?`${b?"whatsapp-business":"whatsapp"}://send?${ph}text=${msg}`:web;
+ const st="display:block;text-align:center;text-decoration:none;color:#fff";
+ $("paper").innerHTML=`<h3>Envoyer par WhatsApp</h3><div style="text-align:center;margin-bottom:8px">${esc(o.name)}${o.phone?" · "+esc(o.phone):""}</div>${n?`<div style="text-align:center;font-size:12px;margin-bottom:8px">Discussion du client : +${n}</div>`:`<div style="background:#fff4d6;padding:8px;border-radius:8px;margin-bottom:8px;font-size:12px">${o.phone?"Indiquez l’indicatif pays pour ouvrir directement la discussion du client :":"Aucun numéro enregistré : vous choisirez le contact dans WhatsApp."}${o.phone?`<div style="display:flex;gap:6px;margin-top:6px"><input id="wcc" inputmode="numeric" placeholder="ex. 221" style="background:#fff;color:#111;border-color:#bbb"><button class="btn sm" data-a="wcc">OK</button></div>`:""}</div>`}<div style="display:grid;gap:8px"><a class="btn sm" href="${lk(0)}" target="_blank" rel="noopener" style="${st};background:#1fa855">WhatsApp</a><a class="btn sm" href="${lk(1)}" target="_blank" rel="noopener" style="${st};background:#0b7a6b">WhatsApp Business</a><a class="btn sm" href="${web}" target="_blank" rel="noopener" style="${st};background:#5d7684">Autre : laisser l’appareil choisir</a></div><hr><div style="font-size:12px">Pour joindre le PDF : enregistrez-le, puis dans la discussion touchez le trombone et choisissez Document.</div><div class="noprint" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn sm" data-a="save">Enregistrer le PDF</button><button class="btn ghost sm" data-a="back" style="color:#111;border-color:#bbb">Retour</button><button class="btn ghost sm" data-a="close" style="color:#111;border-color:#bbb">Fermer</button></div>`}
+function labels(o){if(!window.QRCode)return toast("Codes QR indisponibles hors connexion");let h="",k=0;
+ o.items.forEach(i=>{for(let n=0;n<i.q;n++){k++;h+=`<div class="lb"><div class="qr" data-t="${o.num}-${k}"></div><div><b>N° ${o.num}-${k}</b><br>${esc(o.name)}<br>${esc(i.n)}</div></div>`}});
+ $("paper").innerHTML=`<h3>Étiquettes</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${h}</div><div class="noprint" style="display:flex;gap:8px;margin-top:12px"><button class="btn sm" data-a="print">Imprimer</button><button class="btn ghost sm" data-a="close" style="color:#111;border-color:#bbb">Fermer</button></div>`;
+ $("paper").querySelectorAll(".qr").forEach(d=>new QRCode(d,{text:d.dataset.t,width:64,height:64}))}
+
+let DB=null;
+const denied=()=>toast("Écriture refusée : accès en lecture seule");
+const persist=o=>{save();if(DB)DB.doc("orders/"+o.id).set(o).catch(denied)};
+const unpersist=id=>{save();if(DB)DB.doc("orders/"+id).delete().catch(denied)};
+const persistPrices=()=>{save();if(DB)DB.doc("meta/prices").set({list:S.prices}).catch(denied)};
+const persistStock=()=>{save();if(DB)DB.doc("meta/stock").set({list:S.stock}).catch(denied)};
+const persistExp=()=>{save();if(DB)DB.doc("meta/expenses").set({list:S.exp}).catch(denied)};
+const persistSettings=()=>{save();if(DB)DB.doc("meta/settings").set({pin:S.pin||0,cur:S.cur||"EUR",shop:S.shop||{}}).catch(denied)};
+render();
+</script>
+</body>
+</html>
